@@ -10,7 +10,7 @@ on:
         required: true
         default: 'us-east-1'
 
-name: Deploy
+name: Deploy Servian Application Infrastructure
 
 jobs:
   # Deploy the Infrastructure Setup for the Servian Application
@@ -41,12 +41,22 @@ jobs:
         echo "Environment name: $ENVIRONMENT"
         echo "::set-output name=environment::$ENVIRONMENT"
     
-    - name: Deploying the Cloudformation the changes
+    # Deploying the VPC
+    - name: Deploying Servian VPC Stack
       id: Servian-VPC
       uses: aws-actions/aws-cloudformation-github-deploy@v1
       with:
-        name: ${{ steps.env-name.outputs.environment }}
+        name: Servian-VPC
         template: ./infrastructure/Servian-VPC.yml
+        no-fail-on-empty-changeset: "1"
+
+    # Deploying the IAM Role
+    - name: Deploying Servian IAM Stack
+      id: Servian-IAM
+      uses: aws-actions/aws-cloudformation-github-deploy@v1
+      with:
+        name: Servian-IAM
+        template: ./infrastructure/Servian-IAM
         no-fail-on-empty-changeset: "1"
 
 
