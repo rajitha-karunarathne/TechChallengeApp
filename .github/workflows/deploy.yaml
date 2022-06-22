@@ -56,7 +56,7 @@ jobs:
       uses: aws-actions/aws-cloudformation-github-deploy@v1
       with:
         name: Servian-IAM
-        template: ./infrastructure/Servian-IAM
+        template: ./infrastructure/Servian-IAM.yml
         no-fail-on-empty-changeset: "1"
 
 
