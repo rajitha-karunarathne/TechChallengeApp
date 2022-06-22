@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: IAM Configurations for Servian Container Application
 
+#Defining the multiple resources for the IAM Role
 Resources:
-
   ECSTaskExecutionRole:
     Type: AWS::IAM::Role
     Properties:

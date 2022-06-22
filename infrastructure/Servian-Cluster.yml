@@ -1,14 +1,15 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Container Cluster Configurations for Servian Container Application
 
+#Defining the Default Values for the Cluster Configuration
 Parameters:
   VpcId:
     Type: AWS::SSM::Parameter::Value<String>
     Default: 'VPCID'
     Description: VPC ID
 
-Resources:
-  
+#Defining the Multiple Resources for the DB
+Resources:  
   ECSCluster:
     Type: AWS::ECS::Cluster
     Properties:

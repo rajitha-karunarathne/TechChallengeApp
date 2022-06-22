@@ -1,6 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Task Definition for Servian Container Application
 
+#Defining the Default Values for the Task and Service
 Parameters:
   VpcId:
     Type: AWS::SSM::Parameter::Value<String>
@@ -35,8 +36,8 @@ Parameters:
     Default: 'SUBNETPUB3'
     Description: Subnet 3 Id
 
-Resources:
-  
+#Defining the multiple resources for the Task and Service
+Resources:  
   Task:
     Type: AWS::ECS::TaskDefinition
     Properties:

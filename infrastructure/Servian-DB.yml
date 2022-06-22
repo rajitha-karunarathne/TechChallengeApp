@@ -1,5 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: DB configuration for Servian Container Application
+
+#Defining the Default Values for the DB Configuration
 Parameters:
   Application:
     Description: Technical Application Name
@@ -77,6 +79,7 @@ Metadata:
       - RDSInstanceName
       - DBUsername
 
+#Defining the Multiple Resources for the DB
 Resources:
   RDSDBPass:
     Type: 'AWS::SecretsManager::Secret'
