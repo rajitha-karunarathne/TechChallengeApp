@@ -136,7 +136,7 @@ Resources:
       EngineVersion: 10
       MasterUsername: !Ref DBUsername
       MasterUserPassword: '{{resolve:secretsmanager:DBPassword:SecretString:DBPassword}}'
-      MultiAZ: false
+      MultiAZ: true
       PubliclyAccessible: false
       StorageEncrypted: false
       StorageType: gp2
