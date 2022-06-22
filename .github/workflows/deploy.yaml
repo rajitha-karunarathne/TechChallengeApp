@@ -14,7 +14,7 @@ name: Deploy
 
 jobs:
   # Deploy the Infrastructure Setup for the Servian Application
-  Servian:
+  Servian_Infra:
     name: Deploying the CFT changes
     runs-on: ubuntu-latest
     outputs:
@@ -23,13 +23,14 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
+  # Setting up the AWS Credentials
     - name: Configure AWS credentials
       id: creds
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: 'us-east-1'
+        aws-region: ${{ github.event.inputs.region }}
 
     - name: Configure environment name
       id: env-name
@@ -45,7 +46,7 @@ jobs:
       uses: aws-actions/aws-cloudformation-github-deploy@v1
       with:
         name: ${{ steps.env-name.outputs.environment }}
-        template: /infrastructure/Servian-VPC.yml
+        template: ./infrastructure/Servian-VPC.yml
         no-fail-on-empty-changeset: "1"
 
 
