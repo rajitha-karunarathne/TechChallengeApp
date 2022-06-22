@@ -50,7 +50,7 @@ Resources:
       ExecutionRoleArn: !ImportValue ECSTaskExecutionRole
       ContainerDefinitions:
         - Name: servian-app
-          Image: public.ecr.aws/e8y1r9o6/servian:latest
+          Image: servian/techchallengeapp:latest
           EntryPoint: 
             - "sh"
             - "-c"
