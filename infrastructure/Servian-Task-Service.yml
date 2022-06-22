@@ -50,8 +50,11 @@ Resources:
       ContainerDefinitions:
         - Name: servian-app
           Image: public.ecr.aws/e8y1r9o6/servian:latest
+          EntryPoint: 
+            - "sh"
+            - "-c"
           Command:
-            - ',updatedb,-s,&&,./TechChallengeApp,serve'
+            - "./TechChallengeApp updatedb -s && ./TechChallengeApp serve"
           Cpu: 256
           Memory: 512
           PortMappings:
@@ -75,7 +78,7 @@ Resources:
               - Name: VTT_DBPORT
                 Value: '5432'
               - Name: VTT_LISTENHOST
-                Value: 'localhost'
+                Value: '0.0.0.0'
               - Name: VTT_LISTENPORT
                 Value: '3000'
 
