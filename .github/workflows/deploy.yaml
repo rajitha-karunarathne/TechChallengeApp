@@ -59,4 +59,37 @@ jobs:
         template: ./infrastructure/Servian-IAM.yml
         no-fail-on-empty-changeset: "1"
 
+    # Deploying the ECS Cluster
+    - name: Deploying Servian ECS Cluster
+      id: Servian-ECS-Cluster
+      uses: aws-actions/aws-cloudformation-github-deploy@v1
+      with:
+        name: Servian-ECS-Cluster
+        template: ./infrastructure/Servian-Cluster.yml
+        no-fail-on-empty-changeset: "1"
+
+    # Deploying the Servian DB
+    - name: Deploying Servian RDS PostgreSQL Database
+      id: Servian-DB
+      uses: aws-actions/aws-cloudformation-github-deploy@v1
+      with:
+        name: Servian-DB
+        template: ./infrastructure/Servian-DB.yml
+        no-fail-on-empty-changeset: "1"
+
+    # Deploying the Servian Task and Service
+    - name: Deploying Servian ECS Fargate Task and Service
+      id: Servian-Task-Service
+      uses: aws-actions/aws-cloudformation-github-deploy@v1
+      with:
+        name: Servian-Task-Service
+        template: ./infrastructure/Servian-Task-Service.yml
+        no-fail-on-empty-changeset: "1"
+
+    # Servian Application URL
+    - name: Print Servian Application URL
+      env:
+        AppEndpoint: ${{ steps.Servian-Task-Service.outputs.ServianAppEndpoint }}
+      run: |
+        echo "Servian Application URL: $AppEndpoint"
 

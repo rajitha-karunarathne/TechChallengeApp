@@ -181,7 +181,7 @@ Outputs:
 
   ApiEndpoint:
     Description: Servian Application Endpoint
-    Value: !Join ['', ['http://', !GetAtt LoadBalancer.DNSName, '/api/tasks/']]
+    Value: !Join ['', ['http://', !GetAtt LoadBalancer.DNSName]]
     Export:
       Name: 'ServianAppEndpoint'
 
