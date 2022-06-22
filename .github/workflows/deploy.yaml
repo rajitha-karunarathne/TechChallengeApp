@@ -89,7 +89,7 @@ jobs:
     # Servian Application URL
     - name: Print Servian Application URL
       env:
-        AppEndpoint: ${{ steps.Servian-Task-Service.outputs.ServianAppEndpoint }}
+        AppEndpoint: ${{ steps.Servian-Task-Service.outputs.ApplicationURL }}
       run: |
         echo "Servian Application URL: $AppEndpoint"
 

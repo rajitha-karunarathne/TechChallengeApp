@@ -179,9 +179,9 @@ Resources:
 
 Outputs:
 
-  ApiEndpoint:
+  ApplicationURL:
     Description: Servian Application Endpoint
     Value: !Join ['', ['http://', !GetAtt LoadBalancer.DNSName]]
     Export:
-      Name: 'ServianAppEndpoint'
+      Name: 'ApplicationURL'
 
