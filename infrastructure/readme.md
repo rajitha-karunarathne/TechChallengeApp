@@ -1,20 +1,20 @@
-Servian Technical Challenge.
+# Servian Technical Challenge. #
 
 Have implemented and tested out the following solution for this technical challenge.
 
 I’m more preferring to use Amazon Web Services as the Cloud Service Provider and since this is a container-based application and have to consider the high availability, scalability and Infrastructure, network layer security factors and also to fully utilize the cloud capabilities thought to use the following AWS Services for this.
 
-1.	Tech Stack Used for the Solution:
+## 1.	Tech Stack Used for the Solution:
 
-•	Cloud Service Provider: AWS
-•	Container Orchestration Service: ECS Fargate
-•	Data Base: RDS PostgreSQL 
-•	Load Balancer: ALB
-•	IaC : AWS CloudFormation
-•	Version Control and Source Code Management + CI/CD : github.com
-•	Repository URL: https://github.com/rajitha-karunarathne/TechChallengeApp
+• Cloud Service Provider: AWS
+• Container Orchestration Service: ECS Fargate
+• Data Base: RDS PostgreSQL 
+• Load Balancer: ALB
+• IaC : AWS CloudFormation
+• Version Control and Source Code Management + CI/CD : github.com
+• Repository URL: https://github.com/rajitha-karunarathne/TechChallengeApp
 
-2.	CFT Template Sequence:
+## 2.	CFT Template Sequence:
 
 Following CFTs been used to deploy the above Infrastructure Setup in to an Empty AWS Account, which can be founded in the above mentioned repository path -> https://github.com/rajitha-karunarathne/TechChallengeApp/tree/master/infrastructure
 
@@ -25,7 +25,7 @@ IV.	Servian-DB.yml : To Deploy the RDS PostgreSQL Database for the solution.
 V.	Servian-Task-Service.yml: To Deploy the ECS Task and Service to run the Servian application container.
 
 
-3.	Deployment Steps:
+## 3.	Deployment Steps:
 
 Prerequisite: 
 •	Fork or clone the repo -> https://github.com/rajitha-karunarathne/TechChallengeApp
