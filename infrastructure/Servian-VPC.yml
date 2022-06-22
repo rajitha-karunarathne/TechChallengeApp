@@ -1,0 +1,449 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Network Configurations for Servian Container Application
+
+#Defining the Default Values for the VPC Configuration
+Parameters:
+  Application:
+    Type: String
+    Description: Account name used as reference in tags and naming
+    Default: Servian
+  VPCCidrBlock:
+    Type: String
+    Description: CIDR block for VPC. (X.X.X.X/X)
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(/([0-9]|[1-2][0-9]|3[0-2]))$"
+    Default: 10.0.0.0/16
+  ConfidentialSubnetCIDR1:
+    Type: String
+    Description: Primary confidential subnet CIDR
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(/([0-9]|[1-2][0-9]|3[0-2]))$"
+    Default: 10.0.1.0/24
+  ConfidentialSubnetCIDR1Zone:
+    Type: String
+    Description: Primary confidential subnet zone
+    AllowedValues:
+    - a
+    - b
+    - c
+    Default: a
+  ConfidentialSubnetCIDR2:
+    Type: String
+    Description: Secondary confidential subnet CIDR
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(/([0-9]|[1-2][0-9]|3[0-2]))$"
+    Default: 10.0.2.0/24
+  ConfidentialSubnetCIDR2Zone:
+    Type: String
+    Description: Primary confidential subnet zone
+    AllowedValues:
+    - a
+    - b
+    - c
+    Default: b
+  ConfidentialSubnetCIDR3:
+    Type: String
+    Description: Tertiary confidential subnet CIDR
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(/([0-9]|[1-2][0-9]|3[0-2]))$"
+    Default: 10.0.3.0/24
+  ConfidentialSubnetCIDR3Zone:
+    Type: String
+    Description: Primary confidential subnet zone
+    AllowedValues:
+    - a
+    - b
+    - c
+    Default: c
+  PublicSubnetCIDR1:
+    Type: String
+    Description: Primary public subnet CIDR
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(/([0-9]|[1-2][0-9]|3[0-2]))$"
+    Default: 10.0.4.0/24
+  PublicSubnetCIDR1Zone:
+    Type: String
+    Description: Primary confidential subnet zone
+    AllowedValues:
+    - a
+    - b
+    - c
+    Default: a
+  PublicSubnetCIDR2:
+    Type: String
+    Description: Secondary public subnet CIDR
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(/([0-9]|[1-2][0-9]|3[0-2]))$"
+    Default: 10.0.5.0/24
+  PublicSubnetCIDR2Zone:
+    Type: String
+    Description: Primary confidential subnet zone
+    AllowedValues:
+    - a
+    - b
+    - c
+    Default: b
+  PublicSubnetCIDR3:
+    Type: String
+    Description: Third public subnet CIDR
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(/([0-9]|[1-2][0-9]|3[0-2]))$"
+    Default: 10.0.6.0/24
+  PublicSubnetCIDR3Zone:
+    Type: String
+    Description: Primary confidential subnet zone
+    AllowedValues:
+    - a
+    - b
+    - c
+    Default: c
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+    - Label:
+        default: Network Configuration
+      Parameters:
+      - Application
+      - VPCCidrBlock
+      - ConfidentialSubnetCIDR1
+      - ConfidentialSubnetCIDR1Zone
+      - ConfidentialSubnetCIDR2
+      - ConfidentialSubnetCIDR2Zone
+      - ConfidentialSubnetCIDR3
+      - ConfidentialSubnetCIDR3Zone
+      - PublicSubnetCIDR1
+      - PublicSubnetCIDR1Zone
+      - PublicSubnetCIDR2
+      - PublicSubnetCIDR2Zone
+      - PublicSubnetCIDR3
+      - PublicSubnetCIDR3Zone
+
+#Defining the Multiple Resources for the VPC
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock:
+        Ref: VPCCidrBlock
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      InstanceTenancy: default
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Join:
+          - " "
+          - - Ref: Application
+            - VPC
+  VPCParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: VPCID
+      Description: This value is the main VPC ID that should be used for deployments
+        in this account
+      Type: String
+      Value:
+        Ref: VPC
+  Subnet1Parameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: SUBNET1
+      Description: This value is the main Subnet ID that should be used for most deployments
+        in this account
+      Type: String
+      Value:
+        Ref: ConfidentialSubnet1
+  Subnet2Parameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: SUBNET2
+      Description: This value is the secondary Subnet ID that should be used for HA
+        deployments in this account
+      Type: String
+      Value:
+        Ref: ConfidentialSubnet2
+  Subnet3Parameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: SUBNET3
+      Description: This value is the secondary Subnet ID that should be used for HA
+        deployments in this account
+      Type: String
+      Value:
+        Ref: ConfidentialSubnet3
+  SubnetPub1Parameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: SUBNETPUB1
+      Description: This value is the primary public Subnet ID that should be used
+        for HA deployments in this account
+      Type: String
+      Value:
+        Ref: PublicSubnet1
+  SubnetPub2Parameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: SUBNETPUB2
+      Description: This value is the secondary public Subnet ID that should be used
+        HA deployments in this account
+      Type: String
+      Value:
+        Ref: PublicSubnet2
+  SubnetPub3Parameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: SUBNETPUB3
+      Description: This value is the Third public Subnet ID that should be used HA
+        deployments in this account
+      Type: String
+      Value:
+        Ref: PublicSubnet3
+  RTableParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: RTABLE
+      Description: This value is the first zone RouteTableId
+      Type: String
+      Value:
+        Ref: PrivateRouteTable
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Join:
+          - " "
+          - - Ref: Application
+            - Internet Gateway
+  IGWGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: VPC
+      InternetGatewayId:
+        Ref: InternetGateway
+  ConfidentialSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock:
+        Ref: ConfidentialSubnetCIDR1
+      AvailabilityZone:
+        Fn::Join:
+        - ''
+        - - Ref: AWS::Region
+          - Ref: ConfidentialSubnetCIDR1Zone
+      MapPublicIpOnLaunch: 'false'
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Join:
+          - " "
+          - - Ref: Application
+            - Confidential Subnet 1
+      VpcId:
+        Ref: VPC
+  ConfidentialSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock:
+        Ref: ConfidentialSubnetCIDR2
+      AvailabilityZone:
+        Fn::Join:
+        - ''
+        - - Ref: AWS::Region
+          - Ref: ConfidentialSubnetCIDR2Zone
+      MapPublicIpOnLaunch: 'false'
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Join:
+          - " "
+          - - Ref: Application
+            - Confidential Subnet 2
+      VpcId:
+        Ref: VPC
+  ConfidentialSubnet3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock:
+        Ref: ConfidentialSubnetCIDR3
+      AvailabilityZone:
+        Fn::Join:
+        - ''
+        - - Ref: AWS::Region
+          - Ref: ConfidentialSubnetCIDR3Zone
+      MapPublicIpOnLaunch: 'false'
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Join:
+          - " "
+          - - Ref: Application
+            - Confidential Subnet 3
+      VpcId:
+        Ref: VPC
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock:
+        Ref: PublicSubnetCIDR1
+      AvailabilityZone:
+        Fn::Join:
+        - ''
+        - - Ref: AWS::Region
+          - Ref: PublicSubnetCIDR1Zone
+      MapPublicIpOnLaunch: 'false'
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Join:
+          - " "
+          - - Ref: Application
+            - Public Subnet 1
+      VpcId:
+        Ref: VPC
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock:
+        Ref: PublicSubnetCIDR2
+      AvailabilityZone:
+        Fn::Join:
+        - ''
+        - - Ref: AWS::Region
+          - Ref: PublicSubnetCIDR2Zone
+      MapPublicIpOnLaunch: 'false'
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Join:
+          - " "
+          - - Ref: Application
+            - Public Subnet 2
+      VpcId:
+        Ref: VPC
+  PublicSubnet3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock:
+        Ref: PublicSubnetCIDR3
+      AvailabilityZone:
+        Fn::Join:
+        - ''
+        - - Ref: AWS::Region
+          - Ref: PublicSubnetCIDR3Zone
+      MapPublicIpOnLaunch: 'false'
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Join:
+          - " "
+          - - Ref: Application
+            - Public Subnet 3
+      VpcId:
+        Ref: VPC
+  PublicRoutetoInternet:
+    Type: AWS::EC2::Route
+    DependsOn:
+    - PublicRouteTable
+    - IGWGatewayAttachment
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: InternetGateway
+      RouteTableId:
+        Ref: PublicRouteTable
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: Private Route Table
+  AttachConfidentialSubnet1RouteTable1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: PrivateRouteTable
+      SubnetId:
+        Ref: ConfidentialSubnet1
+  AttachConfidentialSubnet2RouteTable1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: PrivateRouteTable
+      SubnetId:
+        Ref: ConfidentialSubnet2
+  AttachConfidentialSubnet3RouteTable1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: PrivateRouteTable
+      SubnetId:
+        Ref: ConfidentialSubnet3
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: Public Route Table 
+  AttachPublicSubnet1RouteTable1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: PublicRouteTable
+      SubnetId:
+        Ref: PublicSubnet1
+  AttachPublicSubnet2RouteTable1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: PublicRouteTable
+      SubnetId:
+        Ref: PublicSubnet2
+  AttachPublicSubnet3RouteTable1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: PublicRouteTable
+      SubnetId:
+        Ref: PublicSubnet3
+  NAT:
+    Type: AWS::EC2::NatGateway
+    Properties:
+        AllocationId:
+          Fn::GetAtt:
+          - EIP
+          - AllocationId
+        SubnetId:
+          Ref: PublicSubnet1
+        Tags:
+        - Key: Name
+          Value: 'servian-nat'
+  EIP:
+    DependsOn: IGWGatewayAttachment
+    Type: AWS::EC2::EIP
+    Properties:
+        Domain: vpc
+  NATRoute:
+    Type: AWS::EC2::Route
+    Properties:
+        RouteTableId:
+          Ref: PrivateRouteTable
+        DestinationCidrBlock: 0.0.0.0/0
+        NatGatewayId:
+          Ref: NAT
+
+Outputs:
+  VPCID:
+    Description: VPC ID
+    Value:
+      Ref: VPC
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-VPCID"
+  VPCCidrBlock:
+    Description: VPC Cidr Block
+    Value:
+      Ref: VPCCidrBlock
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-VPCCidrBlock"

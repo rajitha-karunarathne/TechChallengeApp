@@ -1,0 +1,182 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: DB configuration for Servian Container Application
+Parameters:
+  Application:
+    Description: Technical Application Name
+    Type: String
+    Default: Servian
+  VpcId:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: 'VPCID'
+    Description: VPC ID
+  Subnet1Id:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: 'SUBNET1'
+    Description: Subnet 1 Id
+  Subnet2Id:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: 'SUBNET2'
+    Description: Subnet 2 Id
+  Subnet3Id:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: 'SUBNET3'
+    Description: Subnet 3 Id
+  DBInstanceClass:
+    Type: String
+    Default: db.t3.micro
+    Description: RDS DB instance types
+    AllowedValues:
+      - db.t2.small
+      - db.t2.large
+      - db.r4.large
+      - db.t3.micro
+    ConstraintDescription: Must select a valid DB instance type
+  DBAllocatedStorage:
+    Description: The size of the database (GiB)
+    Type: Number
+    ConstraintDescription: must be between 20 and 65536 GiB
+    Default: 5
+  DBBackupRetentionPeriod:
+    Description: The number of days to keep snapshots of the database
+    Type: Number
+    Default: 1
+  DBInstanceID:
+    Description: PostgreSQL database of Servian
+    Type: String
+    Default: Servian-rds-db
+  SubnetGroupName:
+    Description: Database Subnet Group Name
+    Type: String
+    Default: Servian-DB-Subnet-Group
+  VPCSecurityGroupName:
+    Description: VPC security Group Name
+    Type: String
+    Default: Servian-rds-vpc-sg
+  RDSInstanceName:
+    Description: RDS Instance Name
+    Type: String
+    Default: ServianDB
+  DBUsername:
+    Description: DB username
+    Type: String
+    Default: masteruser
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+    - Label:
+        default: Database Configuration
+      Parameters:
+      - Application
+      - DBInstanceClass
+      - DBAllocatedStorage
+      - DBBackupRetentionPeriod
+      - DBInstanceID
+      - SubnetGroupName
+      - VPCSecurityGroupName
+      - RDSInstanceName
+      - DBUsername
+
+Resources:
+  RDSDBPass:
+    Type: 'AWS::SecretsManager::Secret'
+    Properties:
+      Name: DBPassword
+      Description: "This secret has a dynamically generated secret password Servian DB."
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "test-user"}'
+        GenerateStringKey: "DBPassword"
+        PasswordLength: 30
+        ExcludeCharacters: '"@/\'
+  RDSSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupName: !Ref SubnetGroupName
+      DBSubnetGroupDescription: BlueYonder Staging DB Subnet Group
+      SubnetIds:
+        - !Ref Subnet1Id
+        - !Ref Subnet2Id
+        - !Ref Subnet3Id
+      Tags:
+        - Key: Name
+          Value: !Ref SubnetGroupName
+  VPCSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          CidrIp: 10.0.0.0/16
+      VpcId: !Ref VpcId
+      GroupDescription: Servian DB Security Group
+      Tags:
+        - Key: Name
+          Value: !Ref VPCSecurityGroupName
+  ServianRDSInstance:
+    Type: AWS::RDS::DBInstance
+    DependsOn: RDSDBPass
+    Properties:
+      AllocatedStorage: !Ref DBAllocatedStorage
+      DBInstanceClass: !Ref DBInstanceClass
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: false
+      BackupRetentionPeriod: !Ref DBBackupRetentionPeriod
+      CopyTagsToSnapshot: true
+      DBInstanceIdentifier: !Ref DBInstanceID
+      DBName: !Ref RDSInstanceName
+      DBSubnetGroupName: !Ref SubnetGroupName
+      Engine: postgres
+      EngineVersion: 10
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: '{{resolve:secretsmanager:DBPassword:SecretString:DBPassword}}'
+      MultiAZ: false
+      PubliclyAccessible: false
+      StorageEncrypted: false
+      StorageType: gp2
+      VPCSecurityGroups:
+        - !Ref VPCSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Ref RDSInstanceName
+  RDSDBParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: RDSDBParameter
+      Description: This value is the RDS DB Endpoint
+        in this account
+      Type: String
+      Value: !GetAtt ServianRDSInstance.Endpoint.Address
+
+Outputs:
+  ServianRDSUrl:
+    Description: URL for Servian RDS DB
+    Value: !Join 
+      - ''
+      - - 'postgresql://'
+        - !GetAtt 
+          - ServianRDSInstance
+          - Endpoint.Address
+
+  DBUsername:
+    Value: !Ref DBUsername
+    Export:
+      Name: 'DBUsername'
+
+  DBName:
+    Value: !Ref RDSInstanceName
+    Export:
+      Name: 'DBName'
+
+  DBPort:
+    Value: '5432'
+    Export:
+      Name: 'DBPort'
+
+  DBPort:
+    Value: '5432'
+    Export:
+      Name: 'DBPort'

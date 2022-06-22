@@ -1,0 +1,184 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Task Definition for Servian Container Application
+
+Parameters:
+  VpcId:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: 'VPCID'
+    Description: VPC ID
+  Subnet1Id:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: 'SUBNET1'
+    Description: Subnet 1 Id
+  Subnet2Id:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: 'SUBNET2'
+    Description: Subnet 2 Id
+  Subnet3Id:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: 'SUBNET3'
+    Description: Subnet 3 Id
+  DbHost:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: 'RDSDBParameter'
+    Description: DB Host
+  PubSubnet1Id:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: 'SUBNETPUB1'
+    Description: Subnet 1 Id
+  PubSubnet2Id:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: 'SUBNETPUB2'
+    Description: Subnet 2 Id
+  PubSubnet3Id:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: 'SUBNETPUB3'
+    Description: Subnet 3 Id
+
+Resources:
+  
+  Task:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: Servian-TD
+      Cpu: 512
+      Memory: 1024
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !ImportValue ECSTaskExecutionRole
+      ContainerDefinitions:
+        - Name: servian-app
+          Image: public.ecr.aws/e8y1r9o6/servian:latest
+          Command:
+            - ',updatedb,-s,&&,./TechChallengeApp,serve'
+          Cpu: 256
+          Memory: 512
+          PortMappings:
+            - ContainerPort: 3000
+              Protocol: tcp
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !ImportValue LogGroupName
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: 'servian-app'
+          Environment: 
+              - Name: VTT_DBUSER
+                Value: !ImportValue DBUsername
+              - Name: VTT_DBPASSWORD
+                Value: '{{resolve:secretsmanager:DBPassword:SecretString:DBPassword}}'
+              - Name: VTT_DBNAME
+                Value: !ImportValue DBName
+              - Name: VTT_DBHOST
+                Value: !Ref DbHost
+              - Name: VTT_DBPORT
+                Value: '5432'
+              - Name: VTT_LISTENHOST
+                Value: 'localhost'
+              - Name: VTT_LISTENPORT
+                Value: '3000'
+
+  Service:
+    Type: AWS::ECS::Service
+    DependsOn: ListenerRule
+    Properties:
+      ServiceName: servian-app-service
+      TaskDefinition: !Ref Task
+      Cluster: !ImportValue 'Servian-ECSCluster'
+      LaunchType: FARGATE
+      DesiredCount: 2
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 70
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets:
+            - !Ref Subnet1Id
+            - !Ref Subnet2Id
+            - !Ref Subnet3Id
+          SecurityGroups:
+            - !Ref ContainerSecurityGroup
+      LoadBalancers:
+        - ContainerName: servian-app
+          ContainerPort: 3000
+          TargetGroupArn: !Ref TargetGroup
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: servian-app-tg
+      VpcId: !Ref VpcId
+      Port: 80
+      Protocol: HTTP
+      Matcher:
+        HttpCode: 200-299
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /healthcheck
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 10
+      TargetType: ip
+
+  ListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    DependsOn: LoadBalancer
+    Properties:
+      ListenerArn: !Ref LoadBalancerListener
+      Priority: 2
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - /
+      Actions:
+        - TargetGroupArn: !Ref TargetGroup
+          Type: forward
+
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: servian-app-lb
+      Subnets:
+        - !Ref PubSubnet1Id
+        - !Ref PubSubnet2Id
+        - !Ref PubSubnet3Id
+      SecurityGroups:
+        - !Ref LoadBalancerSecurityGroup
+
+  LoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Protocol: HTTP
+      Port: 80
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+
+  LoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for loadbalancer to services on ECS
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: -1
+
+  ContainerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup      
+    Properties:
+     VpcId: !Ref VpcId
+     GroupDescription: for ecs containers
+     SecurityGroupIngress:
+       - SourceSecurityGroupId: !Ref 'LoadBalancerSecurityGroup'
+         IpProtocol: -1
+
+Outputs:
+
+  ApiEndpoint:
+    Description: Servian Application Endpoint
+    Value: !Join ['', ['http://', !GetAtt LoadBalancer.DNSName, '/api/tasks/']]
+    Export:
+      Name: 'ServianAppEndpoint'
+

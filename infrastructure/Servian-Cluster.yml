@@ -1,0 +1,34 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Container Cluster Configurations for Servian Container Application
+
+Parameters:
+  VpcId:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: 'VPCID'
+    Description: VPC ID
+
+Resources:
+  
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: 'Servian-Cluster'
+
+  CloudWatchLogsGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: 'servian-logs'
+      RetentionInDays: 1
+
+Outputs:
+  
+  Cluster:
+    Value: !Ref ECSCluster
+    Export:
+      Name: 'Servian-ECSCluster'
+
+  LogGroupName:
+    Description: Cloud Watch Log Group Name
+    Value: !Ref CloudWatchLogsGroup
+    Export:
+      Name: 'LogGroupName'
