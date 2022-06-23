@@ -6,30 +6,31 @@ I’m more preferring to use Amazon Web Services as the Cloud Service Provider a
 
 ## 1.	Tech Stack Used for the Solution:
 
-• Cloud Service Provider: AWS
-• Container Orchestration Service: ECS Fargate
-• Data Base: RDS PostgreSQL 
-• Load Balancer: ALB
-• IaC : AWS CloudFormation
-• Version Control and Source Code Management + CI/CD : github.com
-• Repository URL: https://github.com/rajitha-karunarathne/TechChallengeApp
+1. Cloud Service Provider: AWS
+2. Container Orchestration Service: ECS Fargate
+3. Data Base: RDS PostgreSQL 
+4. Load Balancer: ALB
+5. IaC : AWS CloudFormation
+6. Version Control and Source Code Management + CI/CD : github.com
+7. Repository URL: https://github.com/rajitha-karunarathne/TechChallengeApp
 
 ## 2.	CFT Template Sequence:
 
 Following CFTs been used to deploy the above Infrastructure Setup in to an Empty AWS Account, which can be founded in the above mentioned repository path -> https://github.com/rajitha-karunarathne/TechChallengeApp/tree/master/infrastructure
 
-I.	Servian-VPC.yml : To Deploy the VPC , Subnets , Internet Gateway , NAT Gateway , Route tables for the solution.
-II.	Servian-IAM.yml : To Deploy the necessary policy permission to run the solution.
-III.Servian-Cluster.yml : To Deploy the ECS cluster for the solution.
-IV.	Servian-DB.yml : To Deploy the RDS PostgreSQL Database for the solution.
-V.	Servian-Task-Service.yml: To Deploy the ECS Task and Service to run the Servian application container.
-
+1. Servian-VPC.yml : To Deploy the VPC , Subnets , Internet Gateway , NAT Gateway , Route tables for the solution.
+2. Servian-IAM.yml : To Deploy the necessary policy permission to run the solution.
+3. Servian-Cluster.yml : To Deploy the ECS cluster for the solution.
+4. Servian-DB.yml : To Deploy the RDS PostgreSQL Database for the solution.
+5. Servian-Task-Service.yml: To Deploy the ECS Task and Service to run the Servian application container.
 
 ## 3.	Deployment Steps:
 
 Prerequisite: 
-•	Fork or clone the repo -> https://github.com/rajitha-karunarathne/TechChallengeApp
-•	Fresh / Empty AWS account with Administrator / root user access.
+1.	Fork or clone the repo -> https://github.com/rajitha-karunarathne/TechChallengeApp
+2.	Fresh / Empty AWS account with Administrator / root user access.
+
+## Steps:
 
 1.	Crete an IAM User (Preferably with Admin access) and by allowing only the AWS programmatic access and download the credential file. (Do not share this with anyone else).
 
