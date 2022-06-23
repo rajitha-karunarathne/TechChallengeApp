@@ -26,9 +26,11 @@ Following CFTs been used to deploy the above Infrastructure Setup in to an Empty
 
 ## 3.	Deployment Steps:
 
-Prerequisite: 
-1.	Fork or clone the repo -> https://github.com/rajitha-karunarathne/TechChallengeApp
-2.	Fresh / Empty AWS account with Administrator / root user access.
+## Prerequisite: 
+
+1.	Github account access.
+2.	Fork or clone the repo -> https://github.com/rajitha-karunarathne/TechChallengeApp
+3.	Fresh / Empty AWS account with Administrator / root user access.
 
 ## Steps:
 
